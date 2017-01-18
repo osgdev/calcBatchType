@@ -109,6 +109,7 @@ public class Main {
 			String mscField = CONFIG.getProperty("mscField");
 			String resultField = CONFIG.getProperty("resultField");
 			String docRef = CONFIG.getProperty("documentReference");
+			int maxMulti = Integer.parseInt(CONFIG.getProperty("maxMulti"));
 			
 			if( !(heads.contains(docRef)) ){
 				LOGGER.fatal("'{}' is not a field in input file '{}'",docRef, input);
@@ -193,7 +194,7 @@ public class Main {
 
 	        LOGGER.info("{} record(s) added to array", docProps.size());
 			
-			CalculateBatchTypes cbt = new CalculateBatchTypes(docProps);
+			CalculateBatchTypes cbt = new CalculateBatchTypes(docProps,maxMulti);
 			
 			ArrayList<DocumentProperties> results = cbt.getResults();
 			

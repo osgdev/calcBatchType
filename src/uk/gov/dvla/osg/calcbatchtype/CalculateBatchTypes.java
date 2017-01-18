@@ -11,11 +11,13 @@ import org.apache.logging.log4j.Logger;
 
 public class CalculateBatchTypes {
 	private ArrayList<DocumentProperties> docProps;
+	private int maxMulti;
 	
 	private static final Logger LOGGER = LogManager.getLogger(CalculateBatchTypes.class.getName());
 	
-	public CalculateBatchTypes(ArrayList<DocumentProperties> docProps){
+	public CalculateBatchTypes(ArrayList<DocumentProperties> docProps, int maxMulti){
 		this.docProps = docProps;
+		this.maxMulti = maxMulti;
 		LOGGER.info("CalculateBatchTypes initiated");
 	}
 	
@@ -33,12 +35,10 @@ public class CalculateBatchTypes {
 			}
 		}
 		
-		
-		int multiLimit = 24;
 		int occurrences = 0;
 		for(DocumentProperties prop : multiCustomers){
 			occurrences = Collections.frequency(docProps, prop);
-			if(occurrences > multiLimit){
+			if(occurrences > maxMulti){
 				//Change batch type to CLERICAL
 				for (DocumentProperties customer : docProps){
 					if (customer.equals(prop)) {
