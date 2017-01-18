@@ -1,6 +1,5 @@
 package uk.gov.dvla.osg.calcbatchtype;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
@@ -52,7 +51,8 @@ public class Main {
 			CONFIG.setProperty("address5Field", "add5.field");
 			CONFIG.setProperty("postcodeField", "Doc.Address.PostalCode");
 			CONFIG.setProperty("mscField", "Doc.Address.PostalCode");
-			CONFIG.setProperty("resultFieldName", "Doc.Address.DeliveryPoint");
+			CONFIG.setProperty("resultField", "Doc.Address.DeliveryPoint");
+			CONFIG.setProperty("documentReference","Doc.ID");
 			
 		}else{
 			LOGGER.info("Running in Production mode");
@@ -75,7 +75,6 @@ public class Main {
 		ArrayList<DocumentProperties> docProps = new ArrayList<DocumentProperties>();
 		int inputSize = 0;
         try {
-			String result;
 			//Define input csv
 			FileReader in = new FileReader(input);
 			CSVFormat inputFormat= CSVFormat.RFC4180.withFirstRecordAsHeader();
@@ -109,7 +108,12 @@ public class Main {
 			String pcField = CONFIG.getProperty("postcodeField");
 			String mscField = CONFIG.getProperty("mscField");
 			String resultField = CONFIG.getProperty("resultField");
+			String docRef = CONFIG.getProperty("documentReference");
 			
+			if( !(heads.contains(docRef)) ){
+				LOGGER.fatal("'{}' is not a field in input file '{}'",docRef, input);
+				System.exit(1);
+			}
 			if( !(heads.contains(ottField)) ){
 				LOGGER.fatal("'{}' is not a field in input file '{}'",ottField, input);
 				System.exit(1);
@@ -162,13 +166,9 @@ public class Main {
 				LOGGER.fatal("'{}' is not a field in input file '{}'",mscField, input);
 				System.exit(1);
 			}
-			if( !(heads.contains(resultField)) ){
-				LOGGER.fatal("'{}' is not a field in input file '{}'",resultField, input);
-				System.exit(1);
-			}
 			
 			//Write headers out
-			printer.printRecord(heads);
+			printer.printRecord(docRef,resultField);
 			
 			Iterable<CSVRecord> records = csvFileParser.getRecords();
 			for (CSVRecord record : records) {
@@ -191,25 +191,9 @@ public class Main {
 			}
 			inputSize = docProps.size();
 
-
 	        LOGGER.info("{} record(s) added to array", docProps.size());
 			
 			CalculateBatchTypes cbt = new CalculateBatchTypes(docProps);
-			
-			/*
-			int noOfFleets = cbt.getFleets().size();
-			int noOfMultiples = cbt.getMultiples().size();
-			int noOfUncoded = cbt.getUncoded().size();
-			int noOfCoded = cbt.getCoded().size();
-			int totalBatched = noOfFleets + noOfMultiples + noOfUncoded + noOfCoded;
-			
-			
-			LOGGER.info("Number of {} = {}","FLEETS",noOfFleets);
-			LOGGER.info("Number of {} = {}","MULTIS",noOfMultiples);
-			LOGGER.info("Number of {} = {}","UNCODED",noOfUncoded);
-			LOGGER.info("Number of {} = {}","CODED",noOfCoded);
-			LOGGER.info("Total input = {}. Total batched = {}",inputSize, totalBatched); 
-			*/
 			
 			ArrayList<DocumentProperties> results = cbt.getResults();
 			
@@ -219,20 +203,11 @@ public class Main {
 			}
 			
 			int i = 0;
-			List<String> resultArray = new ArrayList<String>();
-			String fieldVal;
 			for (CSVRecord record : records) {
-				for(String field : heads){
-					if(field.equalsIgnoreCase(resultField)){
-					    fieldVal=results.get(i).getBatchType();
-					}else{
-						fieldVal = record.get(field);
-					}
-					resultArray.add(fieldVal);
-				}
-				LOGGER.info("BT='{}'",results.get(i).getBatchType());
-			    printer.printRecord(resultArray);
-			    resultArray.clear();
+				printer.printRecord(record.get(docRef),results.get(i).getBatchType());
+			
+				LOGGER.debug("BT='{}'",results.get(i).getBatchType());
+
 			    i ++;
 			}
 			csvFileParser.close();
