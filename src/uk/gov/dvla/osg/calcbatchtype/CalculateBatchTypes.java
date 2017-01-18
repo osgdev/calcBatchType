@@ -1,6 +1,7 @@
 package uk.gov.dvla.osg.calcbatchtype;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -32,14 +33,31 @@ public class CalculateBatchTypes {
 			}
 		}
 		
-		ArrayList<DocumentProperties> list = new ArrayList<DocumentProperties>(multiCustomers);
+		
+		int multiLimit = 24;
+		int occurrences = 0;
+		for(DocumentProperties prop : multiCustomers){
+			occurrences = Collections.frequency(docProps, prop);
+			if(occurrences > multiLimit){
+				//Change batch type to CLERICAL
+				for (DocumentProperties customer : docProps){
+					if (customer.equals(prop)) {
+						customer.setBatchType("CLERICAL");
+					}
+				}
+			}
+		}
+		
+		ArrayList<DocumentProperties> multis = new ArrayList<DocumentProperties>(multiCustomers);
 		
 		
 		while (it.hasNext()) {
 			DocumentProperties dp = it.next();
 			if(!("".equals(dp.getFleetNo().trim()))){
 				dp.setBatchType("FLEET");
-			} else if( list.contains(dp) ) {
+			} else if ("CLERICAL".equals(dp.getBatchType())){
+				dp.setBatchType("CLERICAL");
+			} else if( multis.contains(dp) ) {
 				dp.setBatchType("MULTI");
 			} else if ( dp.getMsc().isEmpty() ){
 				dp.setBatchType("UNCODED");
