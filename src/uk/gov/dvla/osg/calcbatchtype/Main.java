@@ -24,38 +24,13 @@ public class Main {
 	private static final Properties CONFIG = new Properties();
 	
 	public static void main(String[] args) {
-		LOGGER.info("Composition Engine started");
+		LOGGER.info("calcBatchType started");
 		String input = "";
 		String output = "";
-		if(args.length == 0){
-			LOGGER.info("Running in DEV mode");
-			input = "C:\\Users\\dendlel\\Desktop\\RPD\\batchCalc\\OTHER.TEST.1.DAT";
-			output = "C:\\Users\\dendlel\\Desktop\\RPD\\batchCalc\\BATCH_CALC.OUT";
-			CONFIG.setProperty("minInputFields", "15");
-			CONFIG.setProperty("maxMulti", "24");
-			CONFIG.setProperty("maxPerEnv", "5");
-			CONFIG.setProperty("createFleet", "Y");
-			CONFIG.setProperty("createClerical", "Y");
-			CONFIG.setProperty("createMultiple", "Y");
-			CONFIG.setProperty("createUncoded", "Y");
-			CONFIG.setProperty("ottField", "prop1");
-			CONFIG.setProperty("appNameField", "app.field");
-			CONFIG.setProperty("fleetField", "fleet.field");
-			CONFIG.setProperty("titleField", "title.field");
-			CONFIG.setProperty("name1Field", "name1.field");
-			CONFIG.setProperty("name2Field", "name2.field");
-			CONFIG.setProperty("address1Field", "add1.field");
-			CONFIG.setProperty("address2Field", "add2.field");
-			CONFIG.setProperty("address3Field", "add3.field");
-			CONFIG.setProperty("address4Field", "add4.field");
-			CONFIG.setProperty("address5Field", "add5.field");
-			CONFIG.setProperty("postcodeField", "Doc.Address.PostalCode");
-			CONFIG.setProperty("mscField", "Doc.Address.PostalCode");
-			CONFIG.setProperty("resultField", "Doc.Address.DeliveryPoint");
-			CONFIG.setProperty("documentReference","Doc.ID");
-			
+		if(args.length != 3){
+			LOGGER.fatal("Incorrect number of args parsed {} expected 3",args.length);
+			System.exit(1);
 		}else{
-			LOGGER.info("Running in Production mode");
 			input = args[0];
 			output = args[1];
 			if(new File(args[2]).exists()){
@@ -109,6 +84,7 @@ public class Main {
 			String mscField = CONFIG.getProperty("mscField");
 			String resultField = CONFIG.getProperty("resultField");
 			String docRef = CONFIG.getProperty("documentReference");
+			String groupIdField = CONFIG.getProperty("groupIdField");
 			int maxMulti = Integer.parseInt(CONFIG.getProperty("maxMulti"));
 			
 			if( !(heads.contains(docRef)) ){
@@ -169,11 +145,12 @@ public class Main {
 			}
 			
 			//Write headers out
-			printer.printRecord(docRef,resultField);
+			printer.printRecord(docRef,resultField,groupIdField);
 			
 			Iterable<CSVRecord> records = csvFileParser.getRecords();
 			for (CSVRecord record : records) {
 				DocumentProperties dp = new DocumentProperties(
+						record.get(docRef),
 						record.get(ottField),
 						record.get(appField),
 						record.get(fleetField),
@@ -205,9 +182,9 @@ public class Main {
 			
 			int i = 0;
 			for (CSVRecord record : records) {
-				printer.printRecord(record.get(docRef),results.get(i).getBatchType());
+				printer.printRecord(record.get(docRef),results.get(i).getBatchType(), results.get(i).getGroupId());
 			
-				LOGGER.debug("BT='{}'",results.get(i).getBatchType());
+				LOGGER.debug("BT='{}' GROUP='{}'",results.get(i).getBatchType(),results.get(i).getGroupId());
 
 			    i ++;
 			}
