@@ -87,12 +87,8 @@ public class CalculateBatchTypes {
 				dp.setGroupId(multiMap.get(dp));
 			} else if ( dp.getMsc().isEmpty() ){
 				dp.setBatchType("UNCODED");
-				dp.setGroupId(i);
-				i ++;
 			} else {
 				dp.setBatchType("CODED");
-				dp.setGroupId(i);
-				i ++;
 			}
 			result.add(dp);
 		}
