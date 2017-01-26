@@ -105,7 +105,7 @@ public class Main {
 			String langField = CONFIG.getProperty("langField");
 			reqFields.add(langField + ",langField,Y");
 			int maxMulti = Integer.parseInt(CONFIG.getProperty("maxMulti"));
-			reqFields.add("" +maxMulti + ",maxMulti,Y");
+			reqFields.add("" +maxMulti + ",maxMulti,N");
 			
 			for(String str : reqFields){
 				String[] split = str.split(",");
