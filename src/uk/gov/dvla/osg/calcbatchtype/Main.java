@@ -68,80 +68,56 @@ public class Main {
 				heads.add(en.getKey());
 			}
 
+			List<String> reqFields = new ArrayList<String>();
 			LOGGER.debug(heads);
 			String ottField = CONFIG.getProperty("ottField");
+			reqFields.add(ottField + ",ottField,Y");
 			String appField = CONFIG.getProperty("appNameField");
+			reqFields.add(appField + ",appNameField,Y");
 			String fleetField = CONFIG.getProperty("fleetField");
+			reqFields.add(fleetField + ",fleetField,Y");
 			String titleField = CONFIG.getProperty("titleField");
+			reqFields.add(titleField + ",titleField,Y");
 			String name1Field = CONFIG.getProperty("name1Field");
+			reqFields.add(name1Field + ",name1Field,Y");
 			String name2Field = CONFIG.getProperty("name2Field");
+			reqFields.add(name2Field + ",name2Field,Y");
 			String add1Field = CONFIG.getProperty("address1Field");
+			reqFields.add(add1Field + ",address1Field,Y");
 			String add2Field = CONFIG.getProperty("address2Field");
+			reqFields.add(add2Field + ",address2Field,Y");
 			String add3Field = CONFIG.getProperty("address3Field");
+			reqFields.add(add3Field + ",address3Field,Y");
 			String add4Field = CONFIG.getProperty("address4Field");
+			reqFields.add(add4Field + ",address4Field,Y");
 			String add5Field = CONFIG.getProperty("address5Field");
+			reqFields.add(add5Field + ",address5Field,Y");
 			String pcField = CONFIG.getProperty("postcodeField");
+			reqFields.add(pcField + ",postcodeField,Y");
 			String mscField = CONFIG.getProperty("mscField");
+			reqFields.add(mscField + ",mscField,Y");
 			String resultField = CONFIG.getProperty("resultField");
+			reqFields.add(resultField + ",resultField,N");
 			String docRef = CONFIG.getProperty("documentReference");
+			reqFields.add(docRef + ",documentReference,Y");
 			String groupIdField = CONFIG.getProperty("groupIdField");
+			reqFields.add(groupIdField + ",groupIdField,N");
+			String langField = CONFIG.getProperty("langField");
+			reqFields.add(langField + ",langField,Y");
 			int maxMulti = Integer.parseInt(CONFIG.getProperty("maxMulti"));
+			reqFields.add("" +maxMulti + ",maxMulti,Y");
 			
-			if( !(heads.contains(docRef)) ){
-				LOGGER.fatal("'{}' is not a field in input file '{}'",docRef, input);
-				System.exit(1);
-			}
-			if( !(heads.contains(ottField)) ){
-				LOGGER.fatal("'{}' is not a field in input file '{}'",ottField, input);
-				System.exit(1);
-			}
-			if( !(heads.contains(appField)) ){
-				LOGGER.fatal("'{}' is not a field in input file '{}'",appField, input);
-				System.exit(1);
-			}
-			if( !(heads.contains(fleetField)) ){
-				LOGGER.fatal("'{}' is not a field in input file '{}'",fleetField, input);
-				System.exit(1);
-			}
-			if( !(heads.contains(titleField)) ){
-				LOGGER.fatal("'{}' is not a field in input file '{}'",titleField, input);
-				System.exit(1);
-			}
-			if( !(heads.contains(name1Field)) ){
-				LOGGER.fatal("'{}' is not a field in input file '{}'",name1Field, input);
-				System.exit(1);
-			}
-			if( !(heads.contains(name2Field)) ){
-				LOGGER.fatal("'{}' is not a field in input file '{}'",name2Field, input);
-				System.exit(1);
-			}
-			if( !(heads.contains(add1Field)) ){
-				LOGGER.fatal("'{}' is not a field in input file '{}'",add1Field, input);
-				System.exit(1);
-			}
-			if( !(heads.contains(add2Field)) ){
-				LOGGER.fatal("'{}' is not a field in input file '{}'",add2Field, input);
-				System.exit(1);
-			}
-			if( !(heads.contains(add3Field)) ){
-				LOGGER.fatal("'{}' is not a field in input file '{}'",add3Field, input);
-				System.exit(1);
-			}
-			if( !(heads.contains(add4Field)) ){
-				LOGGER.fatal("'{}' is not a field in input file '{}'",add4Field, input);
-				System.exit(1);
-			}
-			if( !(heads.contains(add5Field)) ){
-				LOGGER.fatal("'{}' is not a field in input file '{}'",add5Field, input);
-				System.exit(1);
-			}
-			if( !(heads.contains(pcField)) ){
-				LOGGER.fatal("'{}' is not a field in input file '{}'",pcField, input);
-				System.exit(1);
-			}
-			if( !(heads.contains(mscField)) ){
-				LOGGER.fatal("'{}' is not a field in input file '{}'",mscField, input);
-				System.exit(1);
+			for(String str : reqFields){
+				String[] split = str.split(",");
+				if ( "null".equals(split[0])){
+					LOGGER.fatal("Field '{}' not in properties file {}.",split[1],args[2]);
+					System.exit(1);
+				}else{
+					if( !(heads.contains(split[0])) && "Y".equals(split[2]) ){
+						LOGGER.fatal("Field '{}' not found in input file {}.",split[0],input);
+						System.exit(1);
+					}
+				}
 			}
 			
 			//Write headers out
@@ -163,7 +139,8 @@ public class Main {
 						record.get(add4Field),
 						record.get(add5Field),
 						record.get(pcField),
-						record.get(mscField));
+						record.get(mscField),
+						record.get(langField));
 				
 				docProps.add(dp);
 			}

@@ -40,7 +40,7 @@ public class CalculateBatchTypes {
 				multiCustomers.add(prop);
 			}
 			if(!("".equals(prop.getFleetNo().trim()))){
-				uniqueFleets.add(prop.getFleetNo());
+				uniqueFleets.add(prop.getFleetNo() + prop.getLang());
 			}
 		}
 		int i = 0;
@@ -73,12 +73,11 @@ public class CalculateBatchTypes {
 		
 		ArrayList<DocumentProperties> multis = new ArrayList<DocumentProperties>(multiCustomers);
 		
-		
 		while (it.hasNext()) {
 			DocumentProperties dp = it.next();
 			if(!("".equals(dp.getFleetNo().trim()))){
 				dp.setBatchType("FLEET");
-				dp.setGroupId(fleetMap.get(dp.getFleetNo()));
+				dp.setGroupId(fleetMap.get(dp.getFleetNo() + dp.getLang()));
 			} else if ("CLERICAL".equals(dp.getBatchType())){
 				dp.setBatchType("CLERICAL");
 				dp.setGroupId(multiMap.get(dp));
@@ -87,8 +86,12 @@ public class CalculateBatchTypes {
 				dp.setGroupId(multiMap.get(dp));
 			} else if ( dp.getMsc().isEmpty() ){
 				dp.setBatchType("UNCODED");
+				//dp.setGroupId(i);
+				//i ++;
 			} else {
 				dp.setBatchType("CODED");
+				//dp.setGroupId(i);
+				//i ++;
 			}
 			result.add(dp);
 		}
