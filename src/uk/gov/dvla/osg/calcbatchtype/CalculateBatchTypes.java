@@ -13,11 +13,13 @@ import org.apache.logging.log4j.Logger;
 
 public class CalculateBatchTypes {
 	private ArrayList<DocumentProperties> docProps;
+	private SelectorLookup lookup;
 	private int maxMulti;
 	
 	private static final Logger LOGGER = LogManager.getLogger(CalculateBatchTypes.class.getName());
 	
-	public CalculateBatchTypes(ArrayList<DocumentProperties> docProps, int maxMulti){
+	public CalculateBatchTypes(ArrayList<DocumentProperties> docProps, int maxMulti, SelectorLookup lookup){
+		this.lookup = lookup;
 		this.docProps = docProps;
 		this.maxMulti = maxMulti;
 		LOGGER.info("CalculateBatchTypes initiated");
@@ -75,23 +77,25 @@ public class CalculateBatchTypes {
 		
 		while (it.hasNext()) {
 			DocumentProperties dp = it.next();
-			if(!("".equals(dp.getFleetNo().trim()))){
+			if( !("".equals(dp.getFleetNo().trim())) && !("x".equalsIgnoreCase(lookup.get(dp.getSelectorRef()).getFleet())) ){
 				dp.setBatchType("FLEET");
 				dp.setGroupId(fleetMap.get(dp.getFleetNo() + dp.getLang()));
-			} else if ("CLERICAL".equals(dp.getBatchType())){
+			} else if ( "CLERICAL".equals(dp.getBatchType()) && !("x".equalsIgnoreCase(lookup.get(dp.getSelectorRef()).getClerical())) ){
 				dp.setBatchType("CLERICAL");
 				dp.setGroupId(multiMap.get(dp));
-			} else if( multis.contains(dp) ) {
+			} else if( multis.contains(dp)  && !("x".equalsIgnoreCase(lookup.get(dp.getSelectorRef()).getMulti())) ) {
 				dp.setBatchType("MULTI");
 				dp.setGroupId(multiMap.get(dp));
-			} else if ( dp.getMsc().isEmpty() ){
+			} else if ( dp.getMsc().isEmpty() && !("x".equalsIgnoreCase(lookup.get(dp.getSelectorRef()).getUncoded())) ){
 				dp.setBatchType("UNCODED");
 				//dp.setGroupId(i);
 				//i ++;
-			} else {
+			} else if ( !("x".equalsIgnoreCase(lookup.get(dp.getSelectorRef()).getCoded())) ) {
 				dp.setBatchType("CODED");
 				//dp.setGroupId(i);
 				//i ++;
+			}else{
+				dp.setBatchType("UNCODED");
 			}
 			result.add(dp);
 		}

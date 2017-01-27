@@ -70,6 +70,11 @@ public class Main {
 
 			List<String> reqFields = new ArrayList<String>();
 			LOGGER.debug(heads);
+			
+			String lookupFile = CONFIG.getProperty("lookupFile");
+			reqFields.add(lookupFile + ",lookupFile,N");
+			String selectorRef = CONFIG.getProperty("lookupReferenceFieldName");
+			reqFields.add(selectorRef + ",lookupReferenceFieldName,Y");
 			String ottField = CONFIG.getProperty("ottField");
 			reqFields.add(ottField + ",ottField,Y");
 			String appField = CONFIG.getProperty("appNameField");
@@ -123,9 +128,19 @@ public class Main {
 			//Write headers out
 			printer.printRecord(docRef,resultField,groupIdField);
 			
+			SelectorLookup lookup = null;
+			if( new File(lookupFile).exists() ){
+				lookup = new SelectorLookup(lookupFile);
+			}else{
+				LOGGER.fatal("File '{}' doesn't exist.",lookupFile);
+				System.exit(1);
+			}
+			
+			
 			Iterable<CSVRecord> records = csvFileParser.getRecords();
 			for (CSVRecord record : records) {
 				DocumentProperties dp = new DocumentProperties(
+						record.get(selectorRef),
 						record.get(docRef),
 						record.get(ottField),
 						record.get(appField),
@@ -148,7 +163,7 @@ public class Main {
 
 	        LOGGER.info("{} record(s) added to array", docProps.size());
 			
-			CalculateBatchTypes cbt = new CalculateBatchTypes(docProps,maxMulti);
+			CalculateBatchTypes cbt = new CalculateBatchTypes(docProps,maxMulti, lookup);
 			
 			ArrayList<DocumentProperties> results = cbt.getResults();
 			

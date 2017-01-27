@@ -2,12 +2,13 @@ package uk.gov.dvla.osg.calcbatchtype;
 
 public class DocumentProperties {
 
-	private String docRef,ott,fleetNo,title,name1,name2,add1,add2,add3,add4,add5,pc,msc,dps,appName,outputMedia,batchType,lang;
+	private String selectorRef, docRef,ott,fleetNo,title,name1,name2,add1,add2,add3,add4,add5,pc,msc,dps,appName,outputMedia,batchType,lang;
 	private Integer groupId;
 	
-	public DocumentProperties(String docRef, String ott, String appName, String fleetNo, String title, String name1, String name2, 
+	public DocumentProperties(String selectorRef, String docRef, String ott, String appName, String fleetNo, String title, String name1, String name2, 
 			String add1, String add2, String add3, String add4, String add5, String pc,
 			String msc, String lang){
+		this.selectorRef=selectorRef;
 		this.docRef=docRef;
 		this.ott = ott;
 		this.appName = appName;
@@ -26,6 +27,14 @@ public class DocumentProperties {
 		
 	}
 	
+	
+	public String getSelectorRef() {
+		return selectorRef;
+	}
+
+	public void setSelectorRef(String selectorRef) {
+		this.selectorRef = selectorRef;
+	}
 	public String getLang() {
 		return lang;
 	}
