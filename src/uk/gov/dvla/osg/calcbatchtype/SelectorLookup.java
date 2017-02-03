@@ -6,37 +6,52 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Properties;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class SelectorLookup {
 	private static final Logger LOGGER = LogManager.getLogger(Main.class.getName());
+	private static Properties CONFIG = null;
 	
-	private String ref, fleet, multi, uncoded,
-	coded, clerical, reject, reprint, mailsortProduct, postageConfig, filePath, presentationConfig;
+	private String ref, productionConfig, postageConfig, filePath, presentationConfig;
 
-	private int batchMax, mailsortThreshold;
+	private int batchMax;
 	
 	private HashMap<String, SelectorLookup> lookup = new HashMap<String, SelectorLookup>();
 	
-	public SelectorLookup(String file){
+	public SelectorLookup(String file, Properties props){
+		LOGGER.info("Creating Lookup..");
 		this.filePath=file;
+		CONFIG=props;
 		if(new File(file).exists()){
+			LOGGER.info("File '{}' exists",file);
 			try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+				LOGGER.info("BufferedReader created succesfully");
 				String line;
+				
 			    while ((line = br.readLine()) != null) {
 			    	String[] array = line.split("\\|");
+			    	LOGGER.debug("Split line '{}' into {} parts",line,array.length);
 			    	if( !("SELECTOR".equals(array[0].trim())) ){
-			    		lookup.put(array[0].trim(), new SelectorLookup(file, array[0].trim(),Integer.parseInt(array[1].trim()),
-			    				array[2].trim(),array[3].trim(),array[4].trim(),array[5].trim(),array[6].trim(),array[7].trim(),array[8].trim(),
-			    				Integer.parseInt(array[9].trim()), array[10].trim(), array[11].trim(), array[12].trim() ));
+			    		LOGGER.debug("ref='{}' file={} batchMax={} prd={} post={} pres={}",array[0].trim(),file,array[1].trim(),array[2].trim(),array[3].trim(),array[4].trim());
+			    		SelectorLookup sel = new SelectorLookup(file, array[0].trim(),Integer.parseInt(array[1].trim()),
+			    				array[2].trim(),array[3].trim(),array[4].trim());
+			    		
+			    		LOGGER.debug("Selector object created succesfully.");
+			    		lookup.put(array[0].trim(), sel );
+			    		LOGGER.debug("Created new selector entry, size now {}",lookup.size());
 			    	}
+			    	
 			    }
 			} catch (FileNotFoundException e) {
 				LOGGER.fatal("Lookup file error: '{}'",e.getMessage());
 				System.exit(1);
 			} catch (IOException e) {
+				LOGGER.fatal("Lookup file error: '{}'",e.getMessage());
+				System.exit(1);
+			} catch (NullPointerException e){
 				LOGGER.fatal("Lookup file error: '{}'",e.getMessage());
 				System.exit(1);
 			}
@@ -46,23 +61,15 @@ public class SelectorLookup {
 		}
 	}
 	
-	public SelectorLookup(String file, String ref, int batchMax, String fleet, String multi, String uncoded,
-			String coded, String clerical, String reject, String reprint,
-			int mailsortThreshold, String mailsortProduct, String postageConfig, String presentationConfig){
+	public SelectorLookup(String file, String ref, int batchMax, String productionConfig, String postageConfig, String presentationConfig){
+		LOGGER.debug("Creating selector object");
 		this.filePath=file;
-		if(validateLookupEntry(ref, fleet, multi, uncoded, coded, clerical, reject, reprint)){
+		if(validateLookupEntry( batchMax, productionConfig, postageConfig, presentationConfig)){
+			LOGGER.debug("Creating selector object..");
 			this.ref=ref;
-			this.fleet=fleet;
-			this.multi=multi;
-			this.uncoded=uncoded;
-			this.coded=coded;
-			this.clerical=clerical;
-			this.reject=reject;
-			this.reprint=reprint;
-			this.mailsortProduct=mailsortProduct;
-			this.postageConfig=postageConfig;
 			this.batchMax=batchMax;
-			this.mailsortThreshold=mailsortThreshold;
+			this.postageConfig=postageConfig;
+			this.productionConfig = productionConfig;
 			this.presentationConfig=presentationConfig;
 		}else{
 			LOGGER.fatal("Validating lookup file '{}' failed on ref '{}' when processing",filePath,ref);
@@ -71,45 +78,33 @@ public class SelectorLookup {
 		
 	}
 	
-	private boolean validateLookupEntry(String ref, String fleet, String multi, String uncoded, String coded, String clerical, String reject, String reprint){
-		if( !("m".equalsIgnoreCase(fleet)) && !("f".equalsIgnoreCase(fleet)) && !("x".equalsIgnoreCase(fleet)) && !(isNumeric(fleet)) ){
-			LOGGER.error("Invalid entry in lookup file '{}'. Invalid value is '{}' in fleet column for ref '{}'.",filePath, fleet, ref);
-			return false;
+	private boolean validateLookupEntry(int batchMax, String productionConfig, String postageConfig, String presentationConfig){
+		boolean result = true;
+		String file ="";
+		if( !(isNumeric("" + batchMax)) ){
+			result = false;
+			LOGGER.error("Field 'batchMax' has erroneous value '{}'",batchMax);
 		}
-		if( !("m".equalsIgnoreCase(multi)) && !("f".equalsIgnoreCase(multi)) && !("x".equalsIgnoreCase(multi)) && !(isNumeric(multi)) ){
-			LOGGER.error("Invalid entry in lookup file '{}'. Invalid value is '{}' in multi column for ref '{}'.",filePath, multi, ref);
-			return false;
+		file = CONFIG.getProperty("productionConfigPath") + productionConfig + CONFIG.getProperty("productionFileSuffix");
+		LOGGER.debug("Checking for file '{}'",file);
+		if( !(new File(file).exists()) ){
+			result = false;
+			LOGGER.error("File '{}' doesn't exist",CONFIG.getProperty("productionConfigPath") + productionConfig + CONFIG.getProperty("productionFileSuffix"));
 		}
-		if( !("m".equalsIgnoreCase(uncoded)) && !("f".equalsIgnoreCase(uncoded)) && !("x".equalsIgnoreCase(uncoded)) && !(isNumeric(uncoded)) ){
-			LOGGER.error("Invalid entry in lookup file '{}'. Invalid value is '{}' in uncoded column for ref '{}'.",filePath, uncoded, ref);
-			return false;
+		file = CONFIG.getProperty("postageConfigPath") + postageConfig + CONFIG.getProperty("postageFileSuffix");
+		LOGGER.debug("Checking for file '{}'",file);
+		if( !(new File(file).exists()) ){
+			result = false;
+			LOGGER.error("File '{}' doesn't exist",CONFIG.getProperty("postageConfigPath") + postageConfig + CONFIG.getProperty("postageFileSuffix"));
 		}
-		if( !("m".equalsIgnoreCase(coded)) && !("f".equalsIgnoreCase(coded)) && !("x".equalsIgnoreCase(coded)) && !(isNumeric(coded)) ){
-			LOGGER.error("Invalid entry in lookup file '{}'. Invalid value is '{}' in coded column for ref '{}'.",filePath, coded, ref);
-			return false;
-		}
-		if( !("m".equalsIgnoreCase(clerical)) && !("f".equalsIgnoreCase(clerical)) && !("x".equalsIgnoreCase(clerical)) && !(isNumeric(clerical)) ){
-			LOGGER.error("Invalid entry in lookup file '{}'. Invalid value is '{}' in clerical column for ref '{}'.",filePath, clerical, ref);
-			return false;
-		}
-		if( !("m".equalsIgnoreCase(reject)) && !("f".equalsIgnoreCase(reject)) && !("x".equalsIgnoreCase(reject)) && !(isNumeric(reject)) ){
-			LOGGER.error("Invalid entry in lookup file '{}'. Invalid value is '{}' in reject column for ref '{}'.",filePath, reject, ref);
-			return false;
-		}
-		if( !("m".equalsIgnoreCase(reprint)) && !("f".equalsIgnoreCase(reprint)) && !("x".equalsIgnoreCase(reprint)) && !(isNumeric(reprint)) ){
-			LOGGER.error("Invalid entry in lookup file '{}'. Invalid value is '{}' in reprint column for ref '{}'.",filePath, reprint, ref);
-			return false;
-		}
-		if( "x".equalsIgnoreCase(fleet) && "x".equalsIgnoreCase(multi) && "x".equalsIgnoreCase(uncoded) && "x".equalsIgnoreCase(coded) && "x".equalsIgnoreCase(clerical) && "x".equalsIgnoreCase(reject) && "x".equalsIgnoreCase(reprint) ){
-			LOGGER.error("All batch types set to 'X' in lookup file '{}' for reference '{}'",filePath, ref);
-			return false;
-		}
-		if( "x".equalsIgnoreCase(uncoded) && "x".equalsIgnoreCase(coded) ){
-			LOGGER.error("Coded and Uncoded columns both set to X in lookup file '{}' for reference '{}'",filePath, ref);
-			return false;
+		file = CONFIG.getProperty("presentationPriorityConfigPath") + presentationConfig + CONFIG.getProperty("presentationPriorityFileSuffix");
+		LOGGER.debug("Checking for file '{}'",file);
+		if( !(new File(file).exists()) ){
+			result = false;
+			LOGGER.error("File '{}' doesn't exist",CONFIG.getProperty("presentationPriorityConfigPath") + presentationConfig + CONFIG.getProperty("presentationPriorityFileSuffix"));
 		}
 		
-		return true;
+		return result;
 	}
 	
 	private boolean isNumeric(String s) {  
@@ -124,72 +119,8 @@ public class SelectorLookup {
 		this.ref = ref;
 	}
 
-	public String getFleet() {
-		return fleet;
-	}
-	
 	public String getFile() {
 		return filePath;
-	}
-
-	public void setFleet(String fleet) {
-		this.fleet = fleet;
-	}
-
-	public String getMulti() {
-		return multi;
-	}
-
-	public void setMulti(String multi) {
-		this.multi = multi;
-	}
-
-	public String getUncoded() {
-		return uncoded;
-	}
-
-	public void setUncoded(String uncoded) {
-		this.uncoded = uncoded;
-	}
-
-	public String getCoded() {
-		return coded;
-	}
-
-	public void setCoded(String coded) {
-		this.coded = coded;
-	}
-
-	public String getClerical() {
-		return clerical;
-	}
-
-	public void setClerical(String clerical) {
-		this.clerical = clerical;
-	}
-
-	public String getReject() {
-		return reject;
-	}
-
-	public void setReject(String reject) {
-		this.reject = reject;
-	}
-
-	public String getReprint() {
-		return reprint;
-	}
-
-	public void setReprint(String reprint) {
-		this.reprint = reprint;
-	}
-
-	public String getMailsortProduct() {
-		return mailsortProduct;
-	}
-
-	public void setMailsortProduct(String mailsortProduct) {
-		this.mailsortProduct = mailsortProduct;
 	}
 
 	public String getPresentationConfig() {
@@ -216,15 +147,15 @@ public class SelectorLookup {
 		this.batchMax = batchMax;
 	}
 
-	public int getMailsortThreshold() {
-		return mailsortThreshold;
-	}
-
-	public void setMailsortThreshold(int mailsortThreshold) {
-		this.mailsortThreshold = mailsortThreshold;
-	}
-	
 	public SelectorLookup get(String ref){
 		return lookup.get(ref);
+	}
+
+	public String getProductionConfig() {
+		return productionConfig;
+	}
+
+	public void setProductionConfig(String productionConfig) {
+		this.productionConfig = productionConfig;
 	}
 }

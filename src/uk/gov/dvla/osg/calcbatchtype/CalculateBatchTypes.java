@@ -15,13 +15,15 @@ public class CalculateBatchTypes {
 	private ArrayList<DocumentProperties> docProps;
 	private SelectorLookup lookup;
 	private int maxMulti;
+	private ProductionConfiguration pc;
 	
 	private static final Logger LOGGER = LogManager.getLogger(CalculateBatchTypes.class.getName());
 	
-	public CalculateBatchTypes(ArrayList<DocumentProperties> docProps, int maxMulti, SelectorLookup lookup){
+	public CalculateBatchTypes(ArrayList<DocumentProperties> docProps, int maxMulti, SelectorLookup lookup, ProductionConfiguration pc){
 		this.lookup = lookup;
 		this.docProps = docProps;
 		this.maxMulti = maxMulti;
+		this.pc = pc;
 		LOGGER.info("CalculateBatchTypes initiated");
 	}
 	
@@ -77,26 +79,46 @@ public class CalculateBatchTypes {
 		
 		while (it.hasNext()) {
 			DocumentProperties dp = it.next();
-			if( !("".equals(dp.getFleetNo().trim())) && !("x".equalsIgnoreCase(lookup.get(dp.getSelectorRef()).getFleet())) ){
-				dp.setBatchType("FLEET");
-				dp.setGroupId(fleetMap.get(dp.getFleetNo() + dp.getLang()));
-			} else if ( "CLERICAL".equals(dp.getBatchType()) && !("x".equalsIgnoreCase(lookup.get(dp.getSelectorRef()).getClerical())) ){
-				dp.setBatchType("CLERICAL");
-				dp.setGroupId(multiMap.get(dp));
-			} else if( multis.contains(dp)  && !("x".equalsIgnoreCase(lookup.get(dp.getSelectorRef()).getMulti())) ) {
-				dp.setBatchType("MULTI");
-				dp.setGroupId(multiMap.get(dp));
-			} else if ( dp.getMsc().isEmpty() && !("x".equalsIgnoreCase(lookup.get(dp.getSelectorRef()).getUncoded())) ){
-				dp.setBatchType("UNCODED");
-				//dp.setGroupId(i);
-				//i ++;
-			} else if ( !("x".equalsIgnoreCase(lookup.get(dp.getSelectorRef()).getCoded())) ) {
-				dp.setBatchType("CODED");
-				//dp.setGroupId(i);
-				//i ++;
+			if( "E".equalsIgnoreCase(dp.getLang()) ){
+				if( !("".equals(dp.getFleetNo().trim())) && !("x".equalsIgnoreCase( pc.getEnglishFleet() )) ){
+					dp.setBatchType("FLEET");
+					dp.setGroupId(fleetMap.get(dp.getFleetNo() + dp.getLang()));
+				} else if ( "CLERICAL".equals(dp.getBatchType()) && !("x".equalsIgnoreCase( pc.getEnglishClerical() )) ){
+					dp.setBatchType("CLERICAL");
+					dp.setGroupId(multiMap.get(dp));
+				} else if( multis.contains(dp) && !( pc.getEnglishMulti().contains("X") )) {
+					dp.setBatchType("MULTI");
+					dp.setGroupId(multiMap.get(dp));
+				} else if ( multis.contains(dp) && ( "x".equalsIgnoreCase(pc.getEnglishMulti())) ){
+					dp.setGroupId(multiMap.get(dp));
+				} else if ( dp.getMsc().isEmpty() && !("x".equalsIgnoreCase(pc.getEnglishUnsorted())) ){
+					dp.setBatchType("UNSORTED");
+				} else if ( !("x".equalsIgnoreCase(pc.getEnglishSorted())) ) {
+					dp.setBatchType("SORTED");
+				}else{
+					dp.setBatchType("UNSORTED");
+				}
 			}else{
-				dp.setBatchType("UNCODED");
+				if( !("".equals(dp.getFleetNo().trim())) && !("x".equalsIgnoreCase( pc.getWelshFleet() )) ){
+					dp.setBatchType("FLEET");
+					dp.setGroupId(fleetMap.get(dp.getFleetNo() + dp.getLang()));
+				} else if ( "CLERICAL".equals(dp.getBatchType()) && !("x".equalsIgnoreCase( pc.getWelshClerical() )) ){
+					dp.setBatchType("CLERICAL");
+					dp.setGroupId(multiMap.get(dp));
+				} else if( multis.contains(dp) && !( pc.getWelshMulti().contains("X") )) {
+					dp.setBatchType("MULTI");
+					dp.setGroupId(multiMap.get(dp));
+				} else if ( multis.contains(dp) && ( "x".equalsIgnoreCase(pc.getWelshMulti())) ){
+					dp.setGroupId(multiMap.get(dp));
+				} else if ( dp.getMsc().isEmpty() && !("x".equalsIgnoreCase(pc.getWelshUnsorted())) ){
+					dp.setBatchType("UNSORTED");
+				} else if ( !("x".equalsIgnoreCase(pc.getWelshSorted())) ) {
+					dp.setBatchType("SORTED");
+				}else{
+					dp.setBatchType("UNSORTED");
+				}
 			}
+			
 			result.add(dp);
 		}
 

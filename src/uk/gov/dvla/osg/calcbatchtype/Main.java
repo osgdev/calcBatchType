@@ -111,6 +111,10 @@ public class Main {
 			reqFields.add(langField + ",langField,Y");
 			int maxMulti = Integer.parseInt(CONFIG.getProperty("maxMulti"));
 			reqFields.add("" +maxMulti + ",maxMulti,N");
+			String productionConfigPath = CONFIG.getProperty("productionConfigPath");
+			reqFields.add(productionConfigPath + ",productionConfigPath,N");
+			String productionFileSuffix = CONFIG.getProperty("productionFileSuffix");
+			reqFields.add(productionFileSuffix + ",productionFileSuffix,N");
 			
 			for(String str : reqFields){
 				String[] split = str.split(",");
@@ -129,16 +133,20 @@ public class Main {
 			printer.printRecord(docRef,resultField,groupIdField);
 			
 			SelectorLookup lookup = null;
-			if( new File(lookupFile).exists() ){
-				lookup = new SelectorLookup(lookupFile);
-			}else{
-				LOGGER.fatal("File '{}' doesn't exist.",lookupFile);
-				System.exit(1);
-			}
-			
-			
+			ProductionConfiguration pc = null;
 			Iterable<CSVRecord> records = csvFileParser.getRecords();
+			boolean firstCustomer = true;
 			for (CSVRecord record : records) {
+				if(firstCustomer){
+					if( new File(lookupFile).exists() ){
+						pc = new ProductionConfiguration(productionConfigPath + lookup.get(record.get(selectorRef)).getProductionConfig() + productionFileSuffix);
+						lookup = new SelectorLookup(lookupFile, CONFIG);
+					}else{
+						LOGGER.fatal("File '{}' doesn't exist.",lookupFile);
+						System.exit(1);
+					}
+					firstCustomer=false;
+				}
 				DocumentProperties dp = new DocumentProperties(
 						record.get(selectorRef),
 						record.get(docRef),
@@ -163,7 +171,7 @@ public class Main {
 
 	        LOGGER.info("{} record(s) added to array", docProps.size());
 			
-			CalculateBatchTypes cbt = new CalculateBatchTypes(docProps,maxMulti, lookup);
+			CalculateBatchTypes cbt = new CalculateBatchTypes(docProps,maxMulti, lookup,pc);
 			
 			ArrayList<DocumentProperties> results = cbt.getResults();
 			
