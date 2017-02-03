@@ -111,10 +111,18 @@ public class Main {
 			reqFields.add(langField + ",langField,Y");
 			int maxMulti = Integer.parseInt(CONFIG.getProperty("maxMulti"));
 			reqFields.add("" +maxMulti + ",maxMulti,N");
+			String presentationPriorityConfigPath = CONFIG.getProperty("presentationPriorityConfigPath");
+			reqFields.add(presentationPriorityConfigPath + ",presentationPriorityConfigPath,N");
+			String presentationPriorityFileSuffix = CONFIG.getProperty("presentationPriorityFileSuffix");
+			reqFields.add(presentationPriorityFileSuffix + ",presentationPriorityFileSuffix,N");
 			String productionConfigPath = CONFIG.getProperty("productionConfigPath");
 			reqFields.add(productionConfigPath + ",productionConfigPath,N");
 			String productionFileSuffix = CONFIG.getProperty("productionFileSuffix");
 			reqFields.add(productionFileSuffix + ",productionFileSuffix,N");
+			String postageConfigPath = CONFIG.getProperty("postageConfigPath");
+			reqFields.add(postageConfigPath + ",postageConfigPath,N");
+			String postageFileSuffix = CONFIG.getProperty("postageFileSuffix");
+			reqFields.add(postageFileSuffix + ",postageFileSuffix,N");
 			
 			for(String str : reqFields){
 				String[] split = str.split(",");
@@ -139,8 +147,9 @@ public class Main {
 			for (CSVRecord record : records) {
 				if(firstCustomer){
 					if( new File(lookupFile).exists() ){
-						pc = new ProductionConfiguration(productionConfigPath + lookup.get(record.get(selectorRef)).getProductionConfig() + productionFileSuffix);
+						
 						lookup = new SelectorLookup(lookupFile, CONFIG);
+						pc = new ProductionConfiguration(productionConfigPath + lookup.get(record.get(selectorRef)).getProductionConfig() + productionFileSuffix);
 					}else{
 						LOGGER.fatal("File '{}' doesn't exist.",lookupFile);
 						System.exit(1);
