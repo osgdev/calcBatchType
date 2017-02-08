@@ -11,6 +11,9 @@ import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import uk.gov.dvla.osg.common.classes.ProductionConfiguration;
+import uk.gov.dvla.osg.common.classes.SelectorLookup;
+
 public class CalculateBatchTypes {
 	private ArrayList<DocumentProperties> docProps;
 	private SelectorLookup lookup;

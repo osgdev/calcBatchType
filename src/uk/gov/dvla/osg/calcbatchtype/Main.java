@@ -18,6 +18,9 @@ import org.apache.commons.csv.QuoteMode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import uk.gov.dvla.osg.common.classes.ProductionConfiguration;
+import uk.gov.dvla.osg.common.classes.SelectorLookup;
+
 public class Main {
 
 	private static final Logger LOGGER = LogManager.getLogger(Main.class.getName());
@@ -101,8 +104,8 @@ public class Main {
 			reqFields.add(pcField + ",postcodeField,Y");
 			String mscField = CONFIG.getProperty("mscField");
 			reqFields.add(mscField + ",mscField,Y");
-			String resultField = CONFIG.getProperty("resultField");
-			reqFields.add(resultField + ",resultField,N");
+			String batchType = CONFIG.getProperty("batchType");
+			reqFields.add(batchType + ",batchType,Y");
 			String docRef = CONFIG.getProperty("documentReference");
 			reqFields.add(docRef + ",documentReference,Y");
 			String groupIdField = CONFIG.getProperty("groupIdField");
@@ -138,7 +141,7 @@ public class Main {
 			}
 			
 			//Write headers out
-			printer.printRecord(docRef,resultField,groupIdField);
+			printer.printRecord(docRef,batchType,groupIdField);
 			
 			SelectorLookup lookup = null;
 			ProductionConfiguration pc = null;
@@ -174,6 +177,10 @@ public class Main {
 						record.get(mscField),
 						record.get(langField));
 				
+				if( !(record.get(batchType).isEmpty()) ){
+					dp.setBatchType(record.get(batchType));
+				}
+				
 				docProps.add(dp);
 			}
 			inputSize = docProps.size();
@@ -204,7 +211,5 @@ public class Main {
 			LOGGER.fatal(e.getMessage());
 			System.exit(1);
 		}
-        
 	}
-
 }
