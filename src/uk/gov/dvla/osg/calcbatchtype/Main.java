@@ -23,7 +23,7 @@ import uk.gov.dvla.osg.common.classes.SelectorLookup;
 
 public class Main {
 
-	private static final Logger LOGGER = LogManager.getLogger(Main.class.getName());
+	private static final Logger LOGGER = LogManager.getLogger();
 	private static final Properties CONFIG = new Properties();
 	
 	public static void main(String[] args) {

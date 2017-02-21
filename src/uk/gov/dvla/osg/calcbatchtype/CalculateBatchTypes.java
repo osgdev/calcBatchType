@@ -50,7 +50,7 @@ public class CalculateBatchTypes {
 				uniqueFleets.add(prop.getFleetNo() + prop.getLang());
 			}
 		}
-		int i = 0;
+		int i = 1;
 		for(DocumentProperties prop : multiCustomers){
 			if("".equals(prop.getFleetNo().trim())){
 				multiMap.put(prop, i);
