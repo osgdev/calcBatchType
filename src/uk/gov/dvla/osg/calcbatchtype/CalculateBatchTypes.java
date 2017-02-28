@@ -46,6 +46,7 @@ public class CalculateBatchTypes {
 			if( !(uniqueCustomers.add(prop)) ){
 				multiCustomers.add(prop);
 			}
+			
 			if(!("".equals(prop.getFleetNo().trim()))){
 				uniqueFleets.add(prop.getFleetNo() + prop.getLang());
 			}
