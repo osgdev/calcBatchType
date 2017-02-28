@@ -142,7 +142,7 @@ public class Main {
             LOGGER.debug("Read line as header '{}'",readLine);
 
             while ((readLine = b.readLine()) != null) {
-            	String[] split = readLine.split("\\t");
+            	String[] split = readLine.split("\\t",-1);
             	DocumentProperties dp = null;
             	
 				if(firstCustomer){
@@ -205,7 +205,7 @@ public class Main {
 			List<String> list = new ArrayList<String>();
 			String result= bu.readLine();
 			while ((readLine = bu.readLine()) != null) {
-				String[] split = readLine.split("\\t");
+				String[] split = readLine.split("\\t",-1);
 				list.clear();
 				for( int x = 0; x < split.length; x ++ ){
 					if( x == batchTypeIdx ){
