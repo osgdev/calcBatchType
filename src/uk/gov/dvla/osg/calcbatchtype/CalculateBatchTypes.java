@@ -55,14 +55,14 @@ public class CalculateBatchTypes {
 		for(DocumentProperties prop : multiCustomers){
 			if("".equals(prop.getFleetNo().trim())){
 				multiMap.put(prop, i);
-				LOGGER.info("Added {} to map with ID {}. Map size now {}",prop.getDocRef(),i,multiMap.size());
+				LOGGER.info("Added {} to multi map with ID {}. Map size now {}",prop.getDocRef(),i,multiMap.size());
 				i ++;
 			}
 		}
 		
 		for(String fleet : uniqueFleets){
 			fleetMap.put(fleet, i);
-			LOGGER.info("Added {} to map with ID {}. Map size now {}",fleet,i,fleetMap.size());
+			LOGGER.info("Added {} to fleet map with ID {}. Map size now {}",fleet,i,fleetMap.size());
 			i ++;
 		}
 		
@@ -101,6 +101,11 @@ public class CalculateBatchTypes {
 						dp.setGroupId(multiMap.get(dp));
 					} else if ( multis.contains(dp) && ( "x".equalsIgnoreCase(pc.getEnglishMulti())) ){
 						dp.setGroupId(multiMap.get(dp));
+						if ( dp.getMsc().isEmpty() && !("x".equalsIgnoreCase(pc.getEnglishUnsorted())) ){
+							dp.setBatchType("UNSORTED");
+						} else {
+							dp.setBatchType("SORTED");
+						}
 					} else if ( dp.getMsc().isEmpty() && !("x".equalsIgnoreCase(pc.getEnglishUnsorted())) ){
 						dp.setBatchType("UNSORTED");
 					} else if ( !("x".equalsIgnoreCase(pc.getEnglishSorted())) ) {
@@ -120,6 +125,11 @@ public class CalculateBatchTypes {
 						dp.setGroupId(multiMap.get(dp));
 					} else if ( multis.contains(dp) && ( "x".equalsIgnoreCase(pc.getWelshMulti())) ){
 						dp.setGroupId(multiMap.get(dp));
+						if ( dp.getMsc().isEmpty() && !("x".equalsIgnoreCase(pc.getWelshUnsorted())) ){
+							dp.setBatchType("UNSORTED");
+						} else {
+							dp.setBatchType("SORTED");
+						}
 					} else if ( dp.getMsc().isEmpty() && !("x".equalsIgnoreCase(pc.getWelshUnsorted())) ){
 						dp.setBatchType("UNSORTED");
 					} else if ( !("x".equalsIgnoreCase(pc.getWelshSorted())) ) {
