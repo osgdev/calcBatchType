@@ -117,21 +117,21 @@ public class CalculateBatchTypes {
 					if( !("".equals(dp.getFleetNo().trim())) && !("x".equalsIgnoreCase( pc.getWelshFleet() )) ){
 						dp.setBatchType("FLEET");
 						dp.setGroupId(fleetMap.get(dp.getFleetNo() + dp.getLang()));
-					} else if ( "CLERICAL".equals(dp.getBatchType()) && !("x".equalsIgnoreCase( pc.getWelshClerical() )) ){
+					} else if( dp.getMsc().isEmpty() && !("x".equalsIgnoreCase(pc.getWelshUnsorted()))){
+						dp.setBatchType("UNSORTED");
+					} else if ( "CLERICAL".equals(dp.getBatchType()) && !(dp.getMsc().isEmpty()) && !("x".equalsIgnoreCase( pc.getWelshClerical() )) ){
 						dp.setBatchType("CLERICAL");
 						dp.setGroupId(multiMap.get(dp));
-					} else if( multis.contains(dp) && !( (pc.getWelshMulti().contains("X") || pc.getWelshMulti().contains("x")) )) {
+					} else if( multis.contains(dp) && !(dp.getMsc().isEmpty()) && !( (pc.getWelshMulti().contains("X") || pc.getWelshMulti().contains("x")) )) {
 						dp.setBatchType("MULTI");
 						dp.setGroupId(multiMap.get(dp));
-					} else if ( multis.contains(dp) && ( "x".equalsIgnoreCase(pc.getWelshMulti())) ){
+					} else if ( multis.contains(dp) && !(dp.getMsc().isEmpty()) && ( "x".equalsIgnoreCase(pc.getWelshMulti())) ){
 						dp.setGroupId(multiMap.get(dp));
 						if ( dp.getMsc().isEmpty() && !("x".equalsIgnoreCase(pc.getWelshUnsorted())) ){
 							dp.setBatchType("UNSORTED");
 						} else {
 							dp.setBatchType("SORTED");
 						}
-					} else if ( dp.getMsc().isEmpty() && !("x".equalsIgnoreCase(pc.getWelshUnsorted())) ){
-						dp.setBatchType("UNSORTED");
 					} else if ( !("x".equalsIgnoreCase(pc.getWelshSorted())) ) {
 						dp.setBatchType("SORTED");
 					}else{
