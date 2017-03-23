@@ -14,6 +14,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import uk.gov.dvla.osg.common.classes.ProductionConfiguration;
+import uk.gov.dvla.osg.common.classes.DocPropField;
 import uk.gov.dvla.osg.common.classes.RpdFileHandler;
 import uk.gov.dvla.osg.common.classes.SelectorLookup;
 
@@ -21,116 +22,46 @@ public class Main {
 
 	private static final Logger LOGGER = LogManager.getLogger();
 	private static final Properties CONFIG = new Properties();
+	private static final int EXPECTED_NUMBER_OF_ARGS = 3;
+	
+	static List<String> headerRecords;
+	
+	private static String input;
+	private static String output;
+	private static String propsFile;
+	
+	private static String lookupFile, selectorRef, ottField, appField, fleetField, titleField, name1Field,
+	name2Field, add1Field, add2Field, add3Field, add4Field, add5Field, pcField, mscField, batchType, docRef,
+	groupIdField, langField, presentationPriorityConfigPath, presentationPriorityFileSuffix, productionConfigPath,
+	productionFileSuffix, postageConfigPath, postageFileSuffix;
+	
+	private static int maxMulti;
 	
 	public static void main(String[] args) {
 		LOGGER.info("calcBatchType started");
-		String input = "";
-		String output = "";
-		if(args.length != 3){
-			LOGGER.fatal("Incorrect number of args parsed {} expected 3",args.length);
-			System.exit(1);
-		}else{
-			input = args[0];
-			output = args[1];
-			if(new File(args[2]).exists()){
-				try {
-					CONFIG.load(new FileInputStream(args[2]));
-				} catch (IOException e) {
-					LOGGER.fatal("Log file didn't load: '{}'",e.getMessage());
-					System.exit(1);
-				}
-			}else{
-				LOGGER.fatal("Log file: '{}' doesn't exist",args[2]);
-				System.exit(1);
-			}
-		}
+
+		validateArgs(args);
 		
-		LOGGER.info("Input file is: {}", input);
-		
+		input = args[0];
+		output = args[1];
+		propsFile = args[2];
+		loadConfigFile(propsFile);
+		assignPropsFromPropsFile();
 		RpdFileHandler fh = new RpdFileHandler(input,output);
+		headerRecords = fh.getHeaders();
+		ensureRequiredPropsAreSet(headerRecords);
 		
 		HashMap<String,Integer> fileMap = fh.getMapping();
 		
-		List<String> heads = fh.getHeaders();
-		
-		
-		List<String> reqFields = new ArrayList<String>();
-		String lookupFile = CONFIG.getProperty("lookupFile");
-		reqFields.add(lookupFile + ",lookupFile,N");
-		String selectorRef = CONFIG.getProperty("lookupReferenceFieldName");
-		reqFields.add(selectorRef + ",lookupReferenceFieldName,Y");
-		String ottField = CONFIG.getProperty("ottField");
-		reqFields.add(ottField + ",ottField,Y");
-		String appField = CONFIG.getProperty("appNameField");
-		reqFields.add(appField + ",appNameField,Y");
-		String fleetField = CONFIG.getProperty("fleetField");
-		reqFields.add(fleetField + ",fleetField,Y");
-		String titleField = CONFIG.getProperty("titleField");
-		reqFields.add(titleField + ",titleField,Y");
-		String name1Field = CONFIG.getProperty("name1Field");
-		reqFields.add(name1Field + ",name1Field,Y");
-		String name2Field = CONFIG.getProperty("name2Field");
-		reqFields.add(name2Field + ",name2Field,Y");
-		String add1Field = CONFIG.getProperty("address1Field");
-		reqFields.add(add1Field + ",address1Field,Y");
-		String add2Field = CONFIG.getProperty("address2Field");
-		reqFields.add(add2Field + ",address2Field,Y");
-		String add3Field = CONFIG.getProperty("address3Field");
-		reqFields.add(add3Field + ",address3Field,Y");
-		String add4Field = CONFIG.getProperty("address4Field");
-		reqFields.add(add4Field + ",address4Field,Y");
-		String add5Field = CONFIG.getProperty("address5Field");
-		reqFields.add(add5Field + ",address5Field,Y");
-		String pcField = CONFIG.getProperty("postcodeField");
-		reqFields.add(pcField + ",postcodeField,Y");
-		String mscField = CONFIG.getProperty("mscField");
-		reqFields.add(mscField + ",mscField,Y");
-		String batchType = CONFIG.getProperty("batchType");
-		reqFields.add(batchType + ",batchType,Y");
-		String docRef = CONFIG.getProperty("documentReference");
-		reqFields.add(docRef + ",documentReference,Y");
-		String groupIdField = CONFIG.getProperty("groupIdField");
-		reqFields.add(groupIdField + ",groupIdField,N");
-		String langField = CONFIG.getProperty("langField");
-		reqFields.add(langField + ",langField,Y");
-		int maxMulti = Integer.parseInt(CONFIG.getProperty("maxMulti"));
-		reqFields.add("" +maxMulti + ",maxMulti,N");
-		String presentationPriorityConfigPath = CONFIG.getProperty("presentationPriorityConfigPath");
-		reqFields.add(presentationPriorityConfigPath + ",presentationPriorityConfigPath,N");
-		String presentationPriorityFileSuffix = CONFIG.getProperty("presentationPriorityFileSuffix");
-		reqFields.add(presentationPriorityFileSuffix + ",presentationPriorityFileSuffix,N");
-		String productionConfigPath = CONFIG.getProperty("productionConfigPath");
-		reqFields.add(productionConfigPath + ",productionConfigPath,N");
-		String productionFileSuffix = CONFIG.getProperty("productionFileSuffix");
-		reqFields.add(productionFileSuffix + ",productionFileSuffix,N");
-		String postageConfigPath = CONFIG.getProperty("postageConfigPath");
-		reqFields.add(postageConfigPath + ",postageConfigPath,N");
-		String postageFileSuffix = CONFIG.getProperty("postageFileSuffix");
-		reqFields.add(postageFileSuffix + ",postageFileSuffix,N");
-		
-		for(String str : reqFields){
-			String[] split = str.split(",");
-			if ( "null".equals(split[0])){
-				LOGGER.fatal("Field '{}' not in properties file {}.",split[1],args[2]);
-				System.exit(1);
-			}else{
-				if( !(heads.contains(split[0])) && "Y".equals(split[2]) ){
-					LOGGER.fatal("Field '{}' not found in input file {}.",split[0],input);
-					System.exit(1);
-				}
-			}
-		}
-		
+
 		ArrayList<DocumentProperties> docProps = new ArrayList<DocumentProperties>();
 		int inputSize = 0;
         try {
-			//Write headers out
-			fh.write(fh.getHeaders());
+			fh.write(headerRecords);
 			SelectorLookup lookup = null;
 			ProductionConfiguration pc = null;
 			boolean firstCustomer = true;
 			String record ="";
-			
 			
 			File f = new File(input);
 
@@ -232,4 +163,100 @@ public class Main {
 			System.exit(1);
 		}
 	}
+	
+	private static void validateArgs(String[] args) {
+		if(args.length != 3){
+			LOGGER.fatal("Incorrect number of args parsed {} expected 3",args.length);
+			System.exit(1);
+		}
+	}
+
+	private static void loadConfigFile(String filePath) {
+		if(new File(filePath).exists()){
+			try {
+				CONFIG.load(new FileInputStream(filePath));
+			} catch (IOException e) {
+				LOGGER.fatal("Log file didn't load: '{}'",e.getMessage());
+				System.exit(1);
+			}
+		}else{
+			LOGGER.fatal("Log file: '{}' doesn't exist",filePath);
+			System.exit(1);
+		}
+	}
+	private static void assignPropsFromPropsFile() {
+		lookupFile = CONFIG.getProperty("lookupFile");
+		selectorRef = CONFIG.getProperty("lookupReferenceFieldName");
+		ottField = CONFIG.getProperty("ottField");
+		appField = CONFIG.getProperty("appNameField");
+		fleetField = CONFIG.getProperty("fleetField");
+		titleField = CONFIG.getProperty("titleField");
+		name1Field = CONFIG.getProperty("name1Field");
+		name2Field = CONFIG.getProperty("name2Field");
+		add1Field = CONFIG.getProperty("address1Field");
+		add2Field = CONFIG.getProperty("address2Field");
+		add3Field = CONFIG.getProperty("address3Field");
+		add4Field = CONFIG.getProperty("address4Field");
+		add5Field = CONFIG.getProperty("address5Field");
+		pcField = CONFIG.getProperty("postcodeField");
+		mscField = CONFIG.getProperty("mscField");
+		batchType = CONFIG.getProperty("batchType");
+		docRef = CONFIG.getProperty("documentReference");
+		groupIdField = CONFIG.getProperty("groupIdField");
+		langField = CONFIG.getProperty("langField");
+		maxMulti = Integer.parseInt(CONFIG.getProperty("maxMulti"));
+		presentationPriorityConfigPath = CONFIG.getProperty("presentationPriorityConfigPath");
+		presentationPriorityFileSuffix = CONFIG.getProperty("presentationPriorityFileSuffix");
+		productionConfigPath = CONFIG.getProperty("productionConfigPath");
+		productionFileSuffix = CONFIG.getProperty("productionFileSuffix");
+		postageConfigPath = CONFIG.getProperty("postageConfigPath");
+		postageFileSuffix = CONFIG.getProperty("postageFileSuffix");
+	}
+	
+	
+	private static void ensureRequiredPropsAreSet(List<String> headers) {
+		
+		//reqFields is used to validate input, the Y signifies that the field should be present in the input file
+		List<DocPropField> reqFields = new ArrayList<DocPropField>();
+		reqFields.add(new DocPropField(lookupFile, "lookupFile", false));
+		reqFields.add(new DocPropField(selectorRef, "lookupReferenceFieldName", true));
+		reqFields.add(new DocPropField(ottField, "ottField", true));
+		reqFields.add(new DocPropField(appField, "appNameField", true));
+		reqFields.add(new DocPropField(fleetField, "fleetField", true));
+		reqFields.add(new DocPropField(titleField, "titleField", true));
+		reqFields.add(new DocPropField(name1Field, "name1Field", true));
+		reqFields.add(new DocPropField(name2Field, "name2Field", true));
+		reqFields.add(new DocPropField(add1Field, "address1Field", true));
+		reqFields.add(new DocPropField(add2Field, "address2Field", true));
+		reqFields.add(new DocPropField(add3Field, "address3Field", true));
+		reqFields.add(new DocPropField(add4Field, "address4Field", true));
+		reqFields.add(new DocPropField(add5Field, "address5Field", true));
+		reqFields.add(new DocPropField(pcField, "postCodeField", true));
+		reqFields.add(new DocPropField(mscField, "mscFieldName", true));
+		reqFields.add(new DocPropField(batchType, "batchTypeFieldName", true));
+		reqFields.add(new DocPropField(docRef, "documentReference", true));
+		reqFields.add(new DocPropField(groupIdField, "groupIdField", false));
+		reqFields.add(new DocPropField(langField, "langField", true));
+		reqFields.add(new DocPropField("" + maxMulti, "maxMulti", false));
+		reqFields.add(new DocPropField(presentationPriorityConfigPath, "presentationPriorityConfigPath", false));
+		reqFields.add(new DocPropField(presentationPriorityFileSuffix, "presentationPriorityFileSuffix", false));
+		reqFields.add(new DocPropField(productionConfigPath, "productionConfigPath", false));
+		reqFields.add(new DocPropField(productionFileSuffix, "productionFileSuffix", false));
+		reqFields.add(new DocPropField(postageConfigPath, "postageConfigPath", false));
+		reqFields.add(new DocPropField(postageFileSuffix, "postageFileSuffix", false));
+		
+		for(DocPropField requiredField : reqFields){
+
+			if ( requiredField.getAttibuteValue() == null || "null".equals(requiredField.getAttibuteValue())){
+				LOGGER.fatal("Field '{}' not in properties file {}.",requiredField.getAttibuteName(), propsFile);
+				System.exit(1);
+			}else{
+				if( !(headers.contains(requiredField.getAttibuteValue())) && requiredField.isRequiredInInputFile() ){
+					LOGGER.fatal("Field '{}' not found in input file {}.",requiredField.getAttibuteValue(),input);
+					System.exit(1);
+				}
+			}
+		}
+	}
+	
 }
