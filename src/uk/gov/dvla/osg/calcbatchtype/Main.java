@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.commons.csv.CSVRecord;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -158,29 +157,30 @@ public class Main {
 					firstCustomer=false;
 				}
 				
-					dp = new DocumentProperties(
-							split[fileMap.get(selectorRef)],
-							split[fileMap.get(docRef)],
-							split[fileMap.get(ottField)],
-							split[fileMap.get(appField)],
-							split[fileMap.get(fleetField)],
-							split[fileMap.get(titleField)],
-							split[fileMap.get(name1Field)],
-							split[fileMap.get(name2Field)],
-							split[fileMap.get(add1Field)],
-							split[fileMap.get(add2Field)],
-							split[fileMap.get(add3Field)],
-							split[fileMap.get(add4Field)],
-							split[fileMap.get(add5Field)],
-							split[fileMap.get(pcField)],
-							split[fileMap.get(mscField)],
-							split[fileMap.get(langField)]);
-					
-					
-					if( !(split[fileMap.get(batchType)].isEmpty()) ){
-						dp.setBatchType(split[fileMap.get(batchType)]);
-					}
-					docProps.add(dp);
+				dp = new DocumentProperties(
+						split[fileMap.get(selectorRef)],
+						split[fileMap.get(docRef)],
+						split[fileMap.get(ottField)],
+						split[fileMap.get(appField)],
+						split[fileMap.get(fleetField)],
+						split[fileMap.get(titleField)],
+						split[fileMap.get(name1Field)],
+						split[fileMap.get(name2Field)],
+						split[fileMap.get(add1Field)],
+						split[fileMap.get(add2Field)],
+						split[fileMap.get(add3Field)],
+						split[fileMap.get(add4Field)],
+						split[fileMap.get(add5Field)],
+						split[fileMap.get(pcField)],
+						split[fileMap.get(mscField)],
+						split[fileMap.get(langField)]);
+				
+				
+				if( !(split[fileMap.get(batchType)].isEmpty()) ){
+					dp.setBatchType(split[fileMap.get(batchType)]);
+				}
+				
+				docProps.add(dp);
 			}
             b.close();
 			inputSize = docProps.size();
@@ -224,7 +224,7 @@ public class Main {
 				i++;
 			}
 			fh.closeFile();
-			
+			bu.close();
 			
 		
         } catch (IOException e) {

@@ -40,29 +40,34 @@ public class CalculateBatchTypes {
 		Set<DocumentProperties> multiCustomers = new HashSet<DocumentProperties>();
 		Map<DocumentProperties,Integer> multiMap = new HashMap<DocumentProperties,Integer>();
 		Map<String,Integer> fleetMap = new HashMap<String,Integer>();
-
+		Set<DocumentProperties> clericalCustomers = new HashSet<DocumentProperties>();
 		
 		for(DocumentProperties prop : docProps){
-			if( !(uniqueCustomers.add(prop)) ){
-				multiCustomers.add(prop);
-			}
 			
-			if(!("".equals(prop.getFleetNo().trim()))){
+			
+			if( prop.getFleetNo().trim().isEmpty() ){
+				
+				if( !(uniqueCustomers.add(prop)) ){
+					multiCustomers.add(prop);
+				}
+				
+			} else {
+				
 				uniqueFleets.add(prop.getFleetNo() + prop.getLang());
+				
+				
 			}
 		}
 		int i = 1;
 		for(DocumentProperties prop : multiCustomers){
-			if("".equals(prop.getFleetNo().trim())){
-				multiMap.put(prop, i);
-				LOGGER.info("Added {} to multi map with ID {}. Map size now {}",prop.getDocRef(),i,multiMap.size());
-				i ++;
-			}
+			multiMap.put(prop, i);
+			//LOGGER.info("Added {} to multi map with ID {}. Map size now {}",prop.getDocRef(),i,multiMap.size());
+			i ++;
 		}
 		
 		for(String fleet : uniqueFleets){
 			fleetMap.put(fleet, i);
-			LOGGER.info("Added {} to fleet map with ID {}. Map size now {}",fleet,i,fleetMap.size());
+			//LOGGER.info("Added {} to fleet map with ID {}. Map size now {}",fleet,i,fleetMap.size());
 			i ++;
 		}
 		
@@ -74,26 +79,21 @@ public class CalculateBatchTypes {
 				occurrences = Collections.frequency(docProps, prop);
 				if(occurrences > maxMulti){
 					//Change batch type to CLERICAL
-					for (DocumentProperties customer : docProps){
-						if (customer.equals(prop)) {
-							customer.setBatchType("CLERICAL");
-						}
-					}
+					clericalCustomers.add(prop);
 				}
 			}
-			
 		}
 		
 		ArrayList<DocumentProperties> multis = new ArrayList<DocumentProperties>(multiCustomers);
 		
 		while (it.hasNext()) {
 			DocumentProperties dp = it.next();
-			if( (dp.getBatchType() == null) ){
+			if( (dp.getBatchType() == null) || "".equals(dp.getBatchType().trim()) ){
 				if( "E".equalsIgnoreCase(dp.getLang()) ){
 					if( !("".equals(dp.getFleetNo().trim())) && !("x".equalsIgnoreCase( pc.getEnglishFleet() )) ){
 						dp.setBatchType("FLEET");
 						dp.setGroupId(fleetMap.get(dp.getFleetNo() + dp.getLang()));
-					} else if ( "CLERICAL".equals(dp.getBatchType()) && !("x".equalsIgnoreCase( pc.getEnglishClerical() )) ){
+					} else if ( clericalCustomers.contains(dp) && !("x".equalsIgnoreCase( pc.getEnglishClerical() )) ){
 						dp.setBatchType("CLERICAL");
 						dp.setGroupId(multiMap.get(dp));
 					} else if( multis.contains(dp) && !( (pc.getEnglishMulti().contains("X") || pc.getEnglishMulti().contains("x")) )) {
@@ -139,7 +139,6 @@ public class CalculateBatchTypes {
 					}
 				}
 			}
-
 			result.add(dp);
 		}
 
