@@ -33,7 +33,7 @@ public class Main {
 	private static String lookupFile, selectorRef, ottField, appField, fleetField, titleField, name1Field,
 	name2Field, add1Field, add2Field, add3Field, add4Field, add5Field, pcField, mscField, batchType, docRef,
 	groupIdField, langField, presentationPriorityConfigPath, presentationPriorityFileSuffix, productionConfigPath,
-	productionFileSuffix, postageConfigPath, postageFileSuffix;
+	productionFileSuffix, postageConfigPath, postageFileSuffix, outputBatchType;
 	
 	private static int maxMulti;
 	
@@ -128,7 +128,7 @@ public class Main {
 			}
 			
 			int i = 0;
-			int batchTypeIdx=fileMap.get(batchType);
+			int batchTypeIdx=fileMap.get(outputBatchType);
 			int groupIdIdx=fileMap.get(groupIdField);
 			
 			//Write results
@@ -211,6 +211,7 @@ public class Main {
 		productionFileSuffix = CONFIG.getProperty("productionFileSuffix");
 		postageConfigPath = CONFIG.getProperty("postageConfigPath");
 		postageFileSuffix = CONFIG.getProperty("postageFileSuffix");
+		outputBatchType = CONFIG.getProperty("outputBatchType");
 	}
 	
 	
@@ -232,8 +233,9 @@ public class Main {
 		reqFields.add(new DocPropField(add4Field, "address4Field", true));
 		reqFields.add(new DocPropField(add5Field, "address5Field", true));
 		reqFields.add(new DocPropField(pcField, "postCodeField", true));
-		reqFields.add(new DocPropField(mscField, "mscFieldName", true));
-		reqFields.add(new DocPropField(batchType, "batchTypeFieldName", true));
+		reqFields.add(new DocPropField(mscField, "mscField", true));
+		reqFields.add(new DocPropField(batchType, "batchType", true));
+		reqFields.add(new DocPropField(outputBatchType, "outputBatchType", true));
 		reqFields.add(new DocPropField(docRef, "documentReference", true));
 		reqFields.add(new DocPropField(groupIdField, "groupIdField", false));
 		reqFields.add(new DocPropField(langField, "langField", true));
