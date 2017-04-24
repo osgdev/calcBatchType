@@ -138,6 +138,8 @@ public class CalculateBatchTypes {
 						dp.setBatchType("UNSORTED");
 					}
 				}
+			}else{
+				dp.setBatchType(dp.getBatchType());
 			}
 			result.add(dp);
 		}
