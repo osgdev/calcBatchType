@@ -25,7 +25,7 @@ public class CalculateBatchTypes {
 	public CalculateBatchTypes(ArrayList<DocumentProperties> docProps, int maxMulti, SelectorLookup lookup, ProductionConfiguration pc){
 		this.lookup = lookup;
 		this.docProps = docProps;
-		//this.maxMulti = maxMulti;
+		this.maxMulti = maxMulti;
 		this.pc = pc;
 		LOGGER.info("CalculateBatchTypes initiated");
 	}
