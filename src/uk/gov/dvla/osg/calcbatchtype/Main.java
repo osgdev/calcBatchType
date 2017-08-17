@@ -45,17 +45,18 @@ public class Main {
 		input = args[0];
 		output = args[1];
 		propsFile = args[2];
+		
 		loadConfigFile(propsFile);
 		assignPropsFromPropsFile();
+		
 		RpdFileHandler fh = new RpdFileHandler(input,output);
 		headerRecords = fh.getHeaders();
 		ensureRequiredPropsAreSet(headerRecords);
-		
 		HashMap<String,Integer> fileMap = fh.getMapping();
-		
 
 		ArrayList<DocumentProperties> docProps = new ArrayList<DocumentProperties>();
 		int inputSize = 0;
+		
         try {
 			fh.write(headerRecords);
 			SelectorLookup lookup = null;
@@ -80,6 +81,7 @@ public class Main {
 						lookup = new SelectorLookup(lookupFile, CONFIG);
 						
 						pc = new ProductionConfiguration(productionConfigPath + lookup.get(split[fileMap.get(selectorRef)]).getProductionConfig() + productionFileSuffix);
+						maxMulti = pc.getMaxMulti();
 						//pc = new ProductionConfiguration(productionConfigPath + lookup.get(record.get(selectorRef)).getProductionConfig() + productionFileSuffix);
 					}else{
 						LOGGER.fatal("File '{}' doesn't exist.",lookupFile);
@@ -118,7 +120,7 @@ public class Main {
 
 	        LOGGER.info("{} record(s) added to array", docProps.size());
 			
-			CalculateBatchTypes cbt = new CalculateBatchTypes(docProps,maxMulti, lookup,pc);
+			CalculateBatchTypes cbt = new CalculateBatchTypes(docProps, maxMulti, lookup,pc);
 			
 			ArrayList<DocumentProperties> results = cbt.getResults();
 			
@@ -204,7 +206,6 @@ public class Main {
 		docRef = CONFIG.getProperty("documentReference");
 		groupIdField = CONFIG.getProperty("groupIdField");
 		langField = CONFIG.getProperty("langField");
-		maxMulti = Integer.parseInt(CONFIG.getProperty("maxMulti"));
 		presentationPriorityConfigPath = CONFIG.getProperty("presentationPriorityConfigPath");
 		presentationPriorityFileSuffix = CONFIG.getProperty("presentationPriorityFileSuffix");
 		productionConfigPath = CONFIG.getProperty("productionConfigPath");
@@ -239,7 +240,7 @@ public class Main {
 		reqFields.add(new DocPropField(docRef, "documentReference", true));
 		reqFields.add(new DocPropField(groupIdField, "groupIdField", false));
 		reqFields.add(new DocPropField(langField, "langField", true));
-		reqFields.add(new DocPropField("" + maxMulti, "maxMulti", false));
+		//reqFields.add(new DocPropField("" + maxMulti, "maxMulti", false));
 		reqFields.add(new DocPropField(presentationPriorityConfigPath, "presentationPriorityConfigPath", false));
 		reqFields.add(new DocPropField(presentationPriorityFileSuffix, "presentationPriorityFileSuffix", false));
 		reqFields.add(new DocPropField(productionConfigPath, "productionConfigPath", false));
@@ -250,11 +251,11 @@ public class Main {
 		for(DocPropField requiredField : reqFields){
 
 			if ( requiredField.getAttibuteValue() == null || "null".equals(requiredField.getAttibuteValue())){
-				LOGGER.fatal("Field '{}' not in properties file {}.",requiredField.getAttibuteName(), propsFile);
+				LOGGER.fatal("Field '{}' not in properties file {}",requiredField.getAttibuteName(), propsFile);
 				System.exit(1);
 			}else{
 				if( !(headers.contains(requiredField.getAttibuteValue())) && requiredField.isRequiredInInputFile() ){
-					LOGGER.fatal("Field '{}' not found in input file {}.",requiredField.getAttibuteValue(),input);
+					LOGGER.fatal("Field '{}' not found in input file {}",requiredField.getAttibuteValue(),input);
 					System.exit(1);
 				}
 			}

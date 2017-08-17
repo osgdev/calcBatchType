@@ -25,7 +25,7 @@ public class CalculateBatchTypes {
 	public CalculateBatchTypes(ArrayList<DocumentProperties> docProps, int maxMulti, SelectorLookup lookup, ProductionConfiguration pc){
 		this.lookup = lookup;
 		this.docProps = docProps;
-		this.maxMulti = maxMulti;
+		//this.maxMulti = maxMulti;
 		this.pc = pc;
 		LOGGER.info("CalculateBatchTypes initiated");
 	}
@@ -43,22 +43,17 @@ public class CalculateBatchTypes {
 		Set<DocumentProperties> clericalCustomers = new HashSet<DocumentProperties>();
 		
 		for(DocumentProperties prop : docProps){
-			
-			
 			if( prop.getFleetNo().trim().isEmpty() ){
-				
 				if( !(uniqueCustomers.add(prop)) ){
 					multiCustomers.add(prop);
 				}
-				
 			} else {
-				
-				uniqueFleets.add(prop.getFleetNo() + prop.getLang());
-				
-				
+				uniqueFleets.add(prop.getFleetNo() + prop.getLang());	
 			}
 		}
+		
 		int i = 1;
+		
 		for(DocumentProperties prop : multiCustomers){
 			multiMap.put(prop, i);
 			//LOGGER.info("Added {} to multi map with ID {}. Map size now {}",prop.getDocRef(),i,multiMap.size());
@@ -69,8 +64,7 @@ public class CalculateBatchTypes {
 			fleetMap.put(fleet, i);
 			//LOGGER.info("Added {} to fleet map with ID {}. Map size now {}",fleet,i,fleetMap.size());
 			i ++;
-		}
-		
+		}	
 		
 		int occurrences = 0;
 		for(DocumentProperties prop : multiCustomers){
@@ -143,7 +137,6 @@ public class CalculateBatchTypes {
 			}
 			result.add(dp);
 		}
-
 		return result;
 	}
 	
