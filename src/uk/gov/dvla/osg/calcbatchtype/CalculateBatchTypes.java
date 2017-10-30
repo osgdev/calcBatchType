@@ -84,18 +84,18 @@ public class CalculateBatchTypes {
 			DocumentProperties dp = it.next();
 			if( (dp.getBatchType() == null) || "".equals(dp.getBatchType().trim()) ){
 				if( "E".equalsIgnoreCase(dp.getLang()) ){
-					if( !("".equals(dp.getFleetNo().trim())) && !("x".equalsIgnoreCase( pc.getEnglishFleet() )) ){
+					if(!("".equals(dp.getFleetNo().trim())) && !("x".equalsIgnoreCase( pc.getEnglishFleet() )) ){
 						dp.setBatchType("FLEET");
 						dp.setGroupId(fleetMap.get(dp.getFleetNo() + dp.getLang()));
-					} else if ( dp.getMsc().isEmpty() && !("x".equalsIgnoreCase(pc.getEnglishUnsorted())) ){
-						dp.setBatchType("UNSORTED");
-					} else if ( clericalCustomers.contains(dp) && !(dp.getMsc().isEmpty()) && !("x".equalsIgnoreCase( pc.getEnglishClerical() )) ){
+					} else if(dp.getMsc().isEmpty() && !("x".equalsIgnoreCase(pc.getEnglishUnsorted())) ){
+						dp.setBatchType("UNSORTED");					
+					} else if(clericalCustomers.contains(dp) && !(dp.getMsc().isEmpty()) && !("x".equalsIgnoreCase(pc.getEnglishClerical())) ){
 						dp.setBatchType("CLERICAL");
 						dp.setGroupId(multiMap.get(dp));
-					} else if( multis.contains(dp) && !(dp.getMsc().isEmpty()) && !((pc.getEnglishMulti().contains("X") || pc.getEnglishMulti().contains("x")) )) {
+					} else if(multis.contains(dp) && !(dp.getMsc().isEmpty()) && !((pc.getEnglishMulti().contains("X") || pc.getEnglishMulti().contains("x")) )) {
 						dp.setBatchType("MULTI");
 						dp.setGroupId(multiMap.get(dp));
-					} else if ( multis.contains(dp) && !(dp.getMsc().isEmpty()) && ("x".equalsIgnoreCase(pc.getEnglishMulti())) ){
+					} else if(multis.contains(dp) && !(dp.getMsc().isEmpty()) && ("x".equalsIgnoreCase(pc.getEnglishMulti())) ){
 						dp.setGroupId(multiMap.get(dp));
 						
 						if (!("x".equalsIgnoreCase(pc.getEnglishSorted())) ){
@@ -103,11 +103,11 @@ public class CalculateBatchTypes {
 						} else {
 							dp.setBatchType("UNSORTED");
 						}
-						//if (dp.getMsc().isEmpty() && !("x".equalsIgnoreCase(pc.getEnglishUnsorted())) ){
-							//dp.setBatchType("UNSORTED");
-						//} else {
-						//	dp.setBatchType("SORTED");
-						//}
+//						if (dp.getMsc().isEmpty() && !("x".equalsIgnoreCase(pc.getEnglishUnsorted())) ){
+//							dp.setBatchType("UNSORTED");
+//						} else {
+//							dp.setBatchType("SORTED");
+//						}
 					} else if ( !("x".equalsIgnoreCase(pc.getEnglishSorted())) ) {
 						dp.setBatchType("SORTED");
 					}else{
@@ -127,11 +127,17 @@ public class CalculateBatchTypes {
 						dp.setGroupId(multiMap.get(dp));
 					} else if ( multis.contains(dp) && !(dp.getMsc().isEmpty()) && ( "x".equalsIgnoreCase(pc.getWelshMulti())) ){
 						dp.setGroupId(multiMap.get(dp));
-						if ( dp.getMsc().isEmpty() && !("x".equalsIgnoreCase(pc.getWelshUnsorted())) ){
-							dp.setBatchType("UNSORTED");
+						
+						if (!("x".equalsIgnoreCase(pc.getWelshUnsorted())) ){
+							dp.setBatchType("SORTED"); 
 						} else {
-							dp.setBatchType("SORTED");
-						}
+							dp.setBatchType("UNSORTED");
+						}						
+						//if ( dp.getMsc().isEmpty() && !("x".equalsIgnoreCase(pc.getWelshUnsorted())) ){
+						//	dp.setBatchType("UNSORTED");
+						//} else {
+						//	dp.setBatchType("SORTED");
+						//}
 					} else if ( !("x".equalsIgnoreCase(pc.getWelshSorted())) ) {
 						dp.setBatchType("SORTED");
 					}else{
@@ -141,6 +147,7 @@ public class CalculateBatchTypes {
 			}else{
 				dp.setBatchType(dp.getBatchType());
 			}
+			
 			result.add(dp);
 		}
 		return result;

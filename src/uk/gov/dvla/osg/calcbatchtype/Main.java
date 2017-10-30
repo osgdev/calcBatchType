@@ -132,6 +132,7 @@ public class Main {
 			int i = 0;
 			int batchTypeIdx=fileMap.get(outputBatchType);
 			int groupIdIdx=fileMap.get(groupIdField);
+			int mscIdIdx=fileMap.get(mscField);
 			
 			//Write results
 			BufferedReader bu = new BufferedReader(new FileReader(f));
@@ -149,6 +150,9 @@ public class Main {
 						}else{
 							list.add("");
 						}
+					} else if( x == mscIdIdx ) {
+						list.add("" + results.get(i).getMsc());
+						//LOGGER.info("SETTING MSC TO {}",results.get(i).getMsc());
 					} else {
 						list.add(split[x]);
 					}
@@ -158,8 +162,6 @@ public class Main {
 			}
 			fh.closeFile();
 			bu.close();
-			
-		
         } catch (IOException e) {
 			LOGGER.fatal(e.getMessage());
 			System.exit(1);
